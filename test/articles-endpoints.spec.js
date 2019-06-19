@@ -87,10 +87,17 @@ describe('Articles Endpoints', function() {
 
   describe(`GET /api/articles/:article_id`, () => {
     context(`Given no articles`, () => {
+      beforeEach(() =>
+        /* db
+          .into('blogful_users')
+          .insert(testUsers) */
+        helpers.seedUsers(db, testUsers)
+      )
       it(`responds with 404`, () => {
         const articleId = 123456
         return supertest(app)
           .get(`/api/articles/${articleId}`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(404, { error: `Article doesn't exist` })
       })
     })
@@ -115,6 +122,7 @@ describe('Articles Endpoints', function() {
 
         return supertest(app)
           .get(`/api/articles/${articleId}`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(200, expectedArticle)
       })
     })
@@ -137,6 +145,7 @@ describe('Articles Endpoints', function() {
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/articles/${maliciousArticle.id}`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200)
           .expect(res => {
             expect(res.body.title).to.eql(expectedArticle.title)
@@ -148,10 +157,17 @@ describe('Articles Endpoints', function() {
 
   describe(`GET /api/articles/:article_id/comments`, () => {
     context(`Given no articles`, () => {
+      beforeEach(() =>
+       /* db
+          .into('blogful_users')
+          .insert(testUsers) */
+        helpers.seedUsers(db, testUsers)
+      )
       it(`responds with 404`, () => {
         const articleId = 123456
         return supertest(app)
           .get(`/api/articles/${articleId}/comments`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(404, { error: `Article doesn't exist` })
       })
     })
@@ -174,6 +190,7 @@ describe('Articles Endpoints', function() {
 
         return supertest(app)
           .get(`/api/articles/${articleId}/comments`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(200, expectedComments)
       })
     })

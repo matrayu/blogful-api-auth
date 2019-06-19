@@ -25,3 +25,7 @@ datestyle = 'iso, mdy'
 timezone = 'UTC'
 #timezone_abbreviations = 'Default'     # Select the set of available time zone
 ```
+
+## Seeding
+
+psql -U dunder-mifflin -d blogful-auth -f ./seeds/seed.blogful_tables.sql

@@ -32,18 +32,32 @@ describe('Comments Endpoints', function() {
         testArticles,
       )
     )
+    it(`responds 401 'Unauthorized request' when invalid password`, () => {
+      const userInvalidPass = { user_name: testUsers[0].user_name, password: 'wrong' }
+      return supertest(app)
+        .post('/api/comments')
+        .set('Authorization', helpers.makeAuthHeader(userInvalidPass))
+        .expect(401, { error: 'Unauthorized request' })
+    })
 
-    it(`creates an comment, responding with 201 and the new comment`, function() {
+    it(`responds 401 'Missng basic token' when missing authorization token`, () => {
+      return supertest(app)
+        .post('/api/comments')
+        .expect(401, { error: 'Missing basic token' })
+    })
+
+    it(`creates a comment, responding with 201 and the new comment`, function() {
       this.retries(3)
       const testArticle = testArticles[0]
       const testUser = testUsers[0]
       const newComment = {
         text: 'Test new comment',
         article_id: testArticle.id,
-        user_id: testUser.id,
+        /* user_id: testUser.id, */
       }
       return supertest(app)
         .post('/api/comments')
+        .set('Authorization', helpers.makeAuthHeader(testUser))
         .send(newComment)
         .expect(201)
         .expect(res => {
@@ -65,7 +79,7 @@ describe('Comments Endpoints', function() {
             .then(row => {
               expect(row.text).to.eql(newComment.text)
               expect(row.article_id).to.eql(newComment.article_id)
-              expect(row.user_id).to.eql(newComment.user_id)
+              expect(row.user_id).to.eql(testUser.id)
               const expectedDate = new Date().toLocaleString('en', { timeZone: 'UTC' })
               const actualDate = new Date(row.date_created).toLocaleString()
               expect(actualDate).to.eql(expectedDate)
@@ -73,14 +87,13 @@ describe('Comments Endpoints', function() {
         )
     })
 
-    const requiredFields = ['text', 'user_id', 'article_id']
+    const requiredFields = ['text', 'article_id']
 
     requiredFields.forEach(field => {
       const testArticle = testArticles[0]
       const testUser = testUsers[0]
       const newComment = {
         text: 'Test new comment',
-        user_id: testUser.id,
         article_id: testArticle.id,
       }
 
@@ -89,6 +102,7 @@ describe('Comments Endpoints', function() {
 
         return supertest(app)
           .post('/api/comments')
+          .set('Authorization', helpers.makeAuthHeader(testUser))
           .send(newComment)
           .expect(400, {
             error: `Missing '${field}' in request body`,
