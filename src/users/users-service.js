@@ -10,7 +10,7 @@ const UserService = {
             .first()
             .then(user => !!user)
     },
-
+    
     insertUser(db, newUser) {
         return db
             .insert(newUser)
