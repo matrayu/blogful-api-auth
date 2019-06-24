@@ -14,7 +14,7 @@ const UserService = {
             .insert(newUser)
             .into('blogful_users')
             .returning('*')
-            .then(([user]) => !!user)
+            .then(([user]) => user)
     },
 
     validatePassword(password) {
