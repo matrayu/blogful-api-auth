@@ -37,35 +37,44 @@ describe('Protected Endpoints', function() {
     const protectedEndpoints = [
       {
         name: `GET /api/articles/:article_id`,
-        path: `/api/articles/1`
+        path: `/api/articles/1`,
+        method: supertest(app).get(`/api/articles/1`),
       },
       {
         name: `GET /api/articles/:article_id/comments`,
-        path: `/api/articles/1/comments`
-      }
+        path: `/api/articles/1/comments`,
+        method: supertest(app).get(`/api/articles/1/comments`),
+      },
+      {
+        name: 'POST /api/comments',
+        path: '/api/comments',
+        method: supertest(app).post('/api/comments'),
+      },
+      {
+        name: 'POST /api/auth/refresh',
+        path: '/api/auth/refresh',
+        method: supertest(app).post('/api/comments'),
+      },
     ]
 
     protectedEndpoints.forEach(endpoint => {
       describe(endpoint.name, () => {
         it(`responds with a 401 'Missing bearer token' when no bearer token`, () => {
-          return supertest(app)
-            .get(endpoint.path)
+          return endpoint.method
             .expect(401, { error: `Missing bearer token` })
         })
 
         it(`responds 401 'Unauthorized request' when when invalid JWT secret`, () => {
           const validUser = testUsers[0]
           const invalidSecret = 'bad-secret'
-          return supertest(app)
-            .get(endpoint.path)
+          return endpoint.method
             .set('Authorization', helpers.makeAuthHeader(validUser, invalidSecret))
             .expect(401, { error: `Unauthorized request` })
         })
   
         it(`responds 401 'Unauthorized request' when invalid user`, () => {
           const userInvalid = { user_name: 'user-not-existy', id: 1 }
-          return supertest(app)
-            .get(endpoint.path)
+          return endpoint.method
             .set('Authorization', helpers.makeAuthHeader(userInvalid))
             .expect(401, { error: `Unauthorized request` })
         })
